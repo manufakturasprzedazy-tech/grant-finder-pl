@@ -7,7 +7,7 @@ Usage, from the project root:
 import argparse
 import json
 import os
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -37,17 +37,21 @@ def main() -> None:
 
     out_dir = ROOT / "eval" / "results"
     out_dir.mkdir(exist_ok=True)
-    out = out_dir / f"{date.today().isoformat()}_h0-cag_{args.config}{'_' + args.only if args.only else ''}.jsonl"
+    # Time in the name: a second run on the same day must not overwrite the first.
+    stamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    out = out_dir / f"{stamp}_h0-cag_{args.config}{'_' + args.only if args.only else ''}.jsonl"
 
     print(f"catalogue: {len(catalogue):,} characters · cases: {len(cases)} · config: {args.config}")
-    with out.open("w", encoding="utf-8") as f:
-        for i, case in enumerate(cases, start=1):
-            result = answer(client, catalogue, case["question"], case["as_of"], args.config)
-            row = {"id": case["id"], "as_of": case["as_of"].isoformat(), "question": case["question"], **result}
+    for i, case in enumerate(cases, start=1):
+        result = answer(client, catalogue, case["question"], case["as_of"], args.config)
+        row = {"id": case["id"], "as_of": case["as_of"].isoformat(), "question": case["question"], **result}
+        # Append per row: the file appears only once the first answer exists (no empty result files).
+        with out.open("a", encoding="utf-8") as f:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
-            print(f"[{i}/{len(cases)}] {case['id']}  {result['latency_s']} s  "
-                  f"finish={result['finish_reason']}  in={result['prompt_tokens']}  "
-                  f"out={result['completion_tokens']}  cached={result['cached_tokens']}  cost={result['cost_usd']}")
+        print(f"[{i}/{len(cases)}] {case['id']}  {result['latency_s']} s  "
+              f"finish={result['finish_reason']}  in={result['prompt_tokens']}  "
+              f"out={result['completion_tokens']}  reasoning={result['reasoning_tokens']}  "
+              f"cached={result['cached_tokens']}  cost={result['cost_usd']}")
     print(f"saved: {out.relative_to(ROOT)}")
 
 
