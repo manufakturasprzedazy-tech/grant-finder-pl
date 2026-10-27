@@ -45,6 +45,8 @@ def answer(client: OpenAI, catalogue: str, question: str, as_of, config: str) ->
         "prompt_tokens": usage.prompt_tokens,
         "completion_tokens": usage.completion_tokens,
         "reasoning_tokens": getattr(usage.completion_tokens_details, "reasoning_tokens", None),
+        # OpenRouter returns the reasoning text in message.reasoning (billed either way, so we keep it).
+        "reasoning": getattr(response.choices[0].message, "reasoning", None),
         "cached_tokens": getattr(usage.prompt_tokens_details, "cached_tokens", None),
         "cost_usd": getattr(usage, "cost", None),
     }
