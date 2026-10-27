@@ -1,0 +1,151 @@
+# Eval set — floor 1 (call catalogue), version 1
+# Created: 2026-09-25. Cases designed and approved by the author; expected answers
+# computed from the snapshot with a script and checked by eye for the diagnostic ones.
+#
+# Rules for this file
+# - Every expected answer must be computable from the spreadsheet COLUMNS
+#   (dates, budget, programme, institution, link) without interpreting official wording.
+#   Eligibility ("does my company qualify?") needs a domain expert: out of scope here,
+#   marked as partial.
+# - One ruler, many systems: the same cases measure every hypothesis (H0 CAG, H1–H3).
+#   Questions must not depend on how the system is built.
+# - Status values (ADR-0008 + ADR-0009): open · closed · undetermined · not_started.
+# - The end date is INCLUSIVE: on the last day a call is still open, and the answer
+#   must say it is the last day.
+# - "row" = row number in sheet Aktualne_konkurencyjne.
+#
+# Known limitation: questions are written by the author, not collected from real users.
+# Representative cases should be replaced with real questions once the system has users.
+
+snapshot: data/NABORY_Krajowe_Programy_wrzesien SNAPSHOT 24.09.2026.xlsx
+
+cases:
+  - id: R01
+    type: representative
+    partial: true          # eligibility needs a domain expert; only dates are checked
+    as_of: 2026-09-25
+    question: "Jakie są aktualne dofinansowania dla mojej firmy, która zajmuje się hydrauliką?"
+    expected:
+      must_not_include:
+        - "any of the 8 calls closed on 2026-09-25 presented as open (rows 2, 7, 11, 12, 13, 16, 19, 26)"
+        - "row 17 (Wysokiej jakości system włączenia społecznego) presented as open — it starts on 2026-09-30"
+
+  - id: R02
+    type: representative
+    as_of: 2026-09-25
+    question: "Mam czas do końca października. Co się w tym miesiącu zamyka, żebym zdążył?"
+    expected:
+      must_include:
+        - "Ścieżka SMART — until 2026-10-16 (row 5)"
+        - "Współfinansowanie działań EDIH — until 2026-10-28 (row 10)"
+        - "Wzmocnienie cyberbezpieczeństwa oraz rozwój odpornej infrastruktury — until 2026-10-30 (row 20)"
+        - "Polskie Mosty Technologiczne — until 2026-10-30 (row 24)"
+      must_not_include:
+        - "calls ending in September or November"
+
+  - id: R03
+    type: representative
+    as_of: 2026-09-25
+    question: "Który otwarty nabór ma największy budżet?"
+    expected:
+      must_include:
+        - "Ścieżka SMART — 350 mln zł (row 5)"
+      must_not_include:
+        - "a call whose budget is text (e.g. 'Budżet do ustalenia', 'do 150 tys. zł') compared as a number"
+
+  - id: D04
+    type: diagnostic
+    tests: counting; the same 7 calls appear in both competitive sheets
+    as_of: 2026-09-25
+    question: "Ile naborów jest teraz otwartych?"
+    expected:
+      must_include:
+        - "17 open"
+        - "3 without a determined end date (rows 22, 23, 27)"
+        - "1 not started yet (row 17)"
+      must_not_include:
+        - "a count that includes duplicates from sheet NOWE_konkurencyjne"
+
+  - id: D05
+    type: diagnostic
+    tests: end date stored as text that looks like a date
+    as_of: 2026-09-25
+    question: "Do kiedy mogę złożyć wniosek w naborze na cyberbezpieczeństwo?"
+    expected:
+      must_include:
+        - "30 października 2026 (row 20)"
+        - "open"
+
+  - id: D06
+    type: diagnostic
+    tests: merged cell; continuous intake, no end date
+    as_of: 2026-09-25
+    question: "Do kiedy trwa nabór na pożyczki na rozwój turystyki?"
+    expected:
+      must_include:
+        - "status undetermined — continuous intake, no end date in the data (row 23)"
+        - "the sheet's wording quoted"
+        - "the call's link"
+      must_not_include:
+        - "an invented end date"
+
+  - id: D07
+    type: diagnostic
+    tests: one name, many calls (the key problem)
+    as_of: 2026-09-25
+    question: "Do kiedy trwa nabór „Kadry nowoczesnej gospodarki”?"
+    expected:
+      must_include:
+        - "there are 7 calls under this name (rows 25–31), with different end dates"
+      must_not_include:
+        - "a single end date given as the only answer"
+
+  - id: D08
+    type: diagnostic
+    tests: last day (inclusive end date) + urgency
+    as_of: 2026-09-30
+    question: "Czy mogę jeszcze złożyć wniosek w naborze „Rozwój systemu edukacji”?"
+    expected:
+      must_include:
+        - "yes — open (row 14)"
+        - "today is the last day"
+
+  - id: D09
+    type: diagnostic
+    tests: day after the end date
+    as_of: 2026-10-01
+    question: "Czy mogę jeszcze złożyć wniosek w naborze „Rozwój systemu edukacji”?"
+    expected:
+      must_include:
+        - "no — it closed on 2026-09-30 (row 14)"
+
+  - id: D10
+    type: diagnostic
+    tests: a date known only to the month vs a real date (check by eye)
+    as_of: 2027-12-15
+    question: "Które nabory „Kadry nowoczesnej gospodarki” są jeszcze otwarte?"
+    expected:
+      must_include:
+        - "open: row 29 (until 2027-12-31)"
+        - "undetermined: rows 27 and 30"
+      must_not_include:
+        - "rows 25, 26, 28 or 31 presented as open"
+
+  - id: D11
+    type: diagnostic
+    tests: start date in the future (status not_started, ADR-0009)
+    as_of: 2026-09-25
+    question: "Czy mogę już złożyć wniosek w naborze „Wysokiej jakości system włączenia społecznego”?"
+    expected:
+      must_include:
+        - "not yet — the call starts on 2026-09-30 (row 17)"
+
+  - id: N12
+    type: hard_negative
+    as_of: 2026-09-25
+    question: "Jakie są nabory w programie Fundusze Europejskie dla Śląskiego?"
+    expected:
+      must_include:
+        - "no such calls in the data — it covers national programmes only"
+      must_not_include:
+        - "any call presented as belonging to a regional programme"
