@@ -1,0 +1,10 @@
+[project]
+name = "dryl-1-dotacje"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=3.19.2",
+    "openpyxl>=3.1.5",
+    "python-dotenv>=1.2.3",
+    "pyyaml>=6.0.3",
+]
