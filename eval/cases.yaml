@@ -1,4 +1,4 @@
-# Eval set — floor 1 (call catalogue), version 1
+# Eval set — floor 1 (call catalogue), version 1.1
 # Created: 2026-09-25. Cases designed and approved by the author; expected answers
 # computed from the snapshot with a script and checked by eye for the diagnostic ones.
 #
@@ -16,6 +16,14 @@
 #
 # Known limitation: questions are written by the author, not collected from real users.
 # Representative cases should be replaced with real questions once the system has users.
+#
+# Changelog
+# - v1.1 (2026-10-28): R02 must_not_include changed from "calls ending in September or
+#   November" to "calls ending after 2026-10-31". Found in error analysis of the
+#   reasoning-on run: "w tym miesiącu" asked on 2026-09-25 also reads as "from today to the
+#   end of October", so September calls are a correct answer. The question is unchanged,
+#   so no rerun is needed. Re-graded both runs: baseline stays 8/12 (it misses Ścieżka
+#   SMART), reasoning-on becomes 10/12.
 
 snapshot: data/NABORY_Krajowe_Programy_wrzesien SNAPSHOT 24.09.2026.xlsx
 
@@ -41,7 +49,7 @@ cases:
         - "Wzmocnienie cyberbezpieczeństwa oraz rozwój odpornej infrastruktury — until 2026-10-30 (row 20)"
         - "Polskie Mosty Technologiczne — until 2026-10-30 (row 24)"
       must_not_include:
-        - "calls ending in September or November"
+        - "calls ending after 2026-10-31"   # v1.1, see changelog
 
   - id: R03
     type: representative
